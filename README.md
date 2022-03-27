@@ -84,3 +84,99 @@
 
 ---
 
+## V2
+
+- 스프링에서는 검증 오류를 보관하는 클래스로 `BindingResult`를 제공한다.
+
+### BindingResult 도입
+```java
+   @PostMapping("/add")
+    public String addItemV1(@ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
+
+        // 검증 오류 결과를 보관 : BindingResult에서 담당하도록 함
+
+        // 검증 로직
+        if (!StringUtils.hasText(item.getItemName())) {
+            bindingResult.addError(new FieldError("item", "itemName", "상품 이름은 필수 입니다."));
+        }
+
+        if (item.getPrice() == null || item.getPrice() < 1000 || item.getPrice() > 1_000_000) {
+            bindingResult.addError(new FieldError("item", "price", "가격은 1,000 ~ 1,000,000까지 허용됩니다."));
+        }
+
+        if (item.getQuantity() == null || item.getQuantity() > 9999) {
+            bindingResult.addError(new FieldError("item", "quantity", "수량은 최대 9,999까지 허용됩니다."));
+        }
+
+        if (item.getPrice() != null && item.getQuantity() != null) {
+            int resultPrice = item.getPrice() * item.getQuantity();
+            if (resultPrice < 10000) {
+                bindingResult.addError(new ObjectError("item",
+                        String.format("가격 * 수량의 합은 10,000원 이상이어야 합니다. 현재값 = %d", resultPrice)));
+            }
+        }
+
+        // 검증에 실패하면 다시 입력 폼으로 보내기
+        if (bindingResult.hasErrors()) {
+            log.info("bindingResult = {}", bindingResult);
+            return "validation/v2/addForm";
+        }
+
+        // 성공 로직
+        Item savedItem = itemRepository.save(item);
+        redirectAttributes.addAttribute("itemId", savedItem.getId());
+        redirectAttributes.addAttribute("status", true);
+        return "redirect:/validation/v2/items/{itemId}";
+    }
+```
+- BindingResult를 매개변수에 선언해준다. (**`@ModelAttribute`의 대상이 되는 매개변수의 바로 뒤에 선언해야한다.**)
+- Map에 일일이 저장하는 대신 BindingResult에 `addError` 해주면 된다.
+  - ObjectError : 글로벌오류
+  - FieldError : 특정 필드에서 발생한 오류(ObjectError의 하위 클래스)
+- BindingResult는 자동으로 Model에 넘어간다.
+  - hasErrors() : 등록된 오류가 있으면 true
+
+### 글로벌 오류 - ObjectError
+```java
+public ObjectError(String objectName, String defaultMessage) {...}
+```
+- objectName : `@ModelAttribute`로 지정한 이름
+- defaultMessage : 오류 메시지
+
+### 필드 오류 - FieldError
+```java
+public FieldError(String objectName, String field, String defaultMessage) {...}
+```
+- objectName : `@ModelAttribute`로 지정한 이름
+- field : 오류가 발생한 필드명
+- defaultMessage : 오류 메시지
+
+### addForm.html - 글로벌 오류 출력
+```html
+<form action="item.html" th:action th:object="${item}" method="post">
+    <div th:if="${#fields.hasGlobalErrors()}">
+        <p class="field-error"
+           th:each="err : ${#fields.globalErrors()}" th:text="${err}">글로벌 오류 메시지</p>
+    </div>
+```
+- `#fields` : BindingResult가 제공하는 검증 오류에 접근
+  - `"${fields.hasGlobalErrors()}"` : 글로벌 오류가 있는 지 여부 반환
+  - `${fields.globalErrors()` : 글로벌 오류들
+
+### addForm.html - 필드 오류 출력
+```html
+<div>
+    <label for="itemName" th:text="#{label.item.itemName}">상품명</label>
+    <input type="text" id="itemName" th:field="*{itemName}" 
+           th:errorclass="field-error" 
+           class="form-control" placeholder="이름을 입력하세요">
+    <div class="field-error" 
+         th:errors="*{itemName}">
+        상품명 오류
+    </div>
+</div>
+```
+- `th:errors` : 필드에서 예외가 발생하면 태그를 출력함
+- `th:errorclass` : `th:field`에서 지정한 필드에 오류가 있으면 오류 class 속성을 추가함
+
+---
