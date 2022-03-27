@@ -130,11 +130,20 @@
     }
 ```
 - BindingResult를 매개변수에 선언해준다. (**`@ModelAttribute`의 대상이 되는 매개변수의 바로 뒤에 선언해야한다.**)
-- Map에 일일이 저장하는 대신 BindingResult에 `addError` 해주면 된다.
-  - ObjectError : 글로벌오류
-  - FieldError : 특정 필드에서 발생한 오류(ObjectError의 하위 클래스)
+  - BindingResult를 선언해주지 않으면 바인딩 실패시 404오류가 발생하면서 컨트롤러가 호출되지 않고, 오류페이지로 이동함.
+  - BindingResult를 선언하면 오류정보를 BindingResult에 담아서 컨트롤러를 정상 호출함
+- BindingResult에 검증 오류를 적용하는 방법
+  - 개발자가 수동 등록(addError)
+  - `@ModelAttribute`의 바인딩 오류 시 스프링에 넣어줌
+  - validator 사용
+
 - BindingResult는 자동으로 Model에 넘어간다.
-  - hasErrors() : 등록된 오류가 있으면 true
+  - hasErrors() : 등록된 오류가 있으면 true\
+
+### BindingResult의 상속관계
+- Errors : BindingResult의 상위 인터페이스
+- BindingResult : 인터페이스
+  - 추가 기능 추가. 주로 BindingResult를 사용
 
 ### 글로벌 오류 - ObjectError
 ```java
