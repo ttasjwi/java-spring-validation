@@ -201,6 +201,32 @@ public FieldError(String objectName, String field,
 - 바인딩 실패가 아닌 경우, 즉 검증 오류일 경우 FieldError의 rejectedValue에 입력값을 저장하여 처리하면 됨.
 - 필드에서 오류 발생 시, thymeleaf는 th:field의 값을 바인딩 객체 기준이 아닌, FieldError에서 보관한 값을 출력한다.
 
+### bindingResult - reject(), rejectValue()
+
+- BindingResult는 이미 바인딩 객체를 알고 있다.
+- 이런 관점에서 reject, rejectValue는 위에서 했던 Error 생성의 편의성을 제공해준다.
+  - BindingResult는 이미 바인딩 객체가 뭔지 알고 있으니 그런 것까지 굳이 알려줄 필요가 없다.
+  - 간단히 입력한 오류코드, 바인딩 객체 정보를 기반으로 messageCodeResolver를 통해 메시지 코드를 찾아낼 수 있다.
+
+#### properties의 코드 지정
+```properties
+range.item.price=가격은 {0} ~ {1}까지 허용합니다.
+```
+- 맨 앞 : 요구사항, 제약조건
+- 가운데 : 객체명
+- 맨 뒤 : 필드명
+#### reject(...) - ObjectError 지원
+```java
+// reject 사용례
+if (resultPrice < 10000) {
+        bindingResult.reject("totalPriceMin", new Object[]{10_000, resultPrice},null);
+        }
+
+// rejectValue(...) 사용례
+bindingResult.rejectValue("itemName", "required");
+```
+- rejectValue(...) : FieldError 편의성 제공
+- reject(...) : ObjectError 편의성 제공
 
 ---
 
