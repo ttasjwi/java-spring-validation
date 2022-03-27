@@ -138,7 +138,9 @@ public ObjectError(String objectName,
 ```
 - objectName : `@ModelAttribute`로 지정한 이름
 - codes : 메시지 코드
+  - String[]으로 여러가지 메시지 코드를 저장해둔다. 1순위, 2순위, 3순위, ...를 찾아서 1순위에 있는 메시지로 넘김
 - arguments : 메시지에서 사용하는 인자
+  - Object[]으로 여러가지 메시지에 사용하는 인자를 지정함
 - defaultMessage : 오류 메시지
 
 ### 필드 오류 - FieldError
@@ -161,7 +163,9 @@ public FieldError(String objectName, String field,
 - rejectedValue : 사용자가 입력한 값(거절된 값)
 - bindingFilure : 바인딩 실패이면 true, 바인딩 실패가 아닌 경우(검증에서 걸린 경우) false
 - codes : 메시지 코드
+  - String[]으로 여러가지 메시지 코드를 저장해둔다. 1순위, 2순위, 3순위, ...를 찾아서 1순위에 있는 메시지로 넘김
 - arguments : 메시지에서 사용하는 인자
+  - Object[]으로 여러가지 메시지에 사용하는 인자를 지정함
 - defaultMessage : 오류 메시지
 
 ### addForm.html - 글로벌 오류 출력
@@ -197,8 +201,8 @@ public FieldError(String objectName, String field,
 - 바인딩 실패가 아닌 경우, 즉 검증 오류일 경우 FieldError의 rejectedValue에 입력값을 저장하여 처리하면 됨.
 - 필드에서 오류 발생 시, thymeleaf는 th:field의 값을 바인딩 객체 기준이 아닌, FieldError에서 보관한 값을 출력한다.
 
----
 
+---
 
 </div>
 </details>
