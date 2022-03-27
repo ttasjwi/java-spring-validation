@@ -4,3 +4,83 @@
 우아한형제들 김영한 님의 인프런 강의 '스프링 MVC 2편 - 백엔드 웹 개발 활용 기술'의 4,5장, "검증" 부분을 따라치면서 정리하는 Repository
 
 ---
+
+## V1
+
+### 컨트롤러에 검증 로직 추가
+```java
+    @PostMapping("/add")
+    public String addItem(@ModelAttribute Item item, RedirectAttributes redirectAttributes, Model model) {
+
+        // 검증 오류 결과를 보관
+        Map<String, String> errors = new HashMap<>();
+
+        // 검증 로직
+        if (!StringUtils.hasText(item.getItemName())) {
+            errors.put("itemName", "상품 이름은 필수 입니다.");
+        }
+
+        if (item.getPrice()==null || item.getPrice() < 1000 || item.getPrice() > 1_000_000) {
+            errors.put("price", "가격은 1,000 ~ 1,000,000까지 허용됩니다.");
+        }
+
+        if (item.getQuantity() == null || item.getQuantity() > 9999) {
+            errors.put("quantity", "수량은 최대 9,999까지 허용됩니다.");
+        }
+
+        if (item.getPrice() != null && item.getQuantity() != null) {
+            int resultPrice = item.getPrice() * item.getQuantity();
+            if (resultPrice < 10000) {
+                errors.put("globalError", String.format("가격 * 수량의 합은 10,000원 이상이어야 합니다. 현재값 = %d", resultPrice));
+            }
+        }
+
+        // 검증에 실패하면 다시 입력 폼으로 보내기
+        if (!errors.isEmpty()) {
+            log.info("errors = {}", errors);
+            model.addAttribute("errors", errors);
+            return "validation/v1/addForm";
+        }
+
+        // 성공 로직
+
+        Item savedItem = itemRepository.save(item);
+        redirectAttributes.addAttribute("itemId", savedItem.getId());
+        redirectAttributes.addAttribute("status", true);
+        return "redirect:/validation/v1/items/{itemId}";
+    }
+
+```
+- 컨트롤러에서 검증 로직을 분기문으로 작성하여, 문제가 있을 때마다 Map에 문자열로 오류를 저장함
+- 오류가 하나라도 있으면 model에 오류들을 담아서 다시 form을 반환함.
+
+### 오류 발생시 메시지 발생
+```html
+<form action="item.html" th:action th:object="${item}" method="post">
+    <div th:if="${errors?.containsKey('globalError')}">
+        <p class="field-error" th:text="${errors['globalError']}">전체 오류 메시지</p>
+    </div>
+    <div>
+        <label for="itemName" th:text="#{label.item.itemName}">상품명</label>
+        <input type="text" id="itemName" th:field="*{itemName}"
+               th:classappend="${errors?.containsKey('itemName')} ? 'field-error' : _"
+               class="form-control" placeholder="이름을 입력하세요">
+        <div class="field-error" th:if="${errors?.containsKey('itemName')}" th:text="${errors['itemName']}">
+            상품명 오류
+        </div>
+```
+-`${errors?.containsKey('globalError')}`
+    - `errors?` : errors가 null일 경우 호출시 NullPointerException일 발생함. 이럴 경우 이를 호출한 메서드가 null을 반환하도록 함
+    - 타임리프에서는 `th:if` 속성에서 null을 false로 처리한다.
+- 예외 발생시 `th:classappend`를 통하여, 예외 스타일을 적용함
+
+
+### V1 방식의 한계
+- 뷰 템플릿에서 중복처리할 것이 너무 많음
+- 타입에 안 맞는 값은 애초에 컨트롤러에 값이 넘어오기 전에 예외가 발생해버림.
+  - 컨트롤러에 넘어올 수 없는 예외에 대해서는 애초에 검증 로직을 수행할 수 없게 되버린다.
+- 오류가 발생하면, 다시 화면에 입력값을 넘겨야하는데 타입오류가 발생한 경우에는 애초에 값 저장이 불가능하므로 문자를 보관할 수 없음.
+- 결국 고객이 입력한 값을 타입에 무관하게 어딘가에 별도로 관리해야함.
+
+---
+
