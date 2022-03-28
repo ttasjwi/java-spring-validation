@@ -277,3 +277,24 @@ public interface Validator {
 </details>
 
 ---
+
+## Bean Validation
+```groovy
+implementation 'org.springframework.boot:spring-boot-starter-validation'
+```
+어노테이션 기반으로 검증로직을 편리하게 적용하는 방법
+- 인터페이스 : `jakarta.validation-api`
+- 구현체 : `hibernate-validaator`
+  - 공식 사이트 : https://hibernate.org/validator/
+  - 공식 메뉴얼 : https://docs.jboss.org/hibernate/validator/6.2/reference/en-US/html_single/#preface
+  - 검증 어노테이션 모음 : https://docs.jboss.org/hibernate/validator/6.2/reference/en-US/html_single/#validator-defineconstraints-spec
+- 스프링 프로젝트가 아닐 경우 사용 방법
+  ```java
+  ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+  Validator validator = factory.getValidator(); // 빈 검증기
+  
+  Set<ConstraintViolation<Item>> violations = validator.validate(item);
+  ```
+- 스프링은 개발자를 위해 이미 빈 검증기를 스프링에 포함하였음.
+
+---
