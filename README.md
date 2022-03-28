@@ -228,7 +228,19 @@ bindingResult.rejectValue("itemName", "required");
 - rejectValue(...) : FieldError 편의성 제공
 - reject(...) : ObjectError 편의성 제공
 
----
+#### 어떤 원리로 작동하는가?
+- bindingResult는 내부적으로 messageCodeResolver를 통해 messageCodes를 만들어낸다.
+  - reject (글로벌 에러)
+    1. code.객체명
+    2. code
+  - rejectValue (필드 에러)
+    1. code.객체명.필드명
+    2. code.필드명
+    3. code.필드타입
+    4. code
+- messageCodes 및 메서드 호출 시 전달한 인자들을 기반으로, 각각 ObjectError, FieldError 메서드를 호출하여 에러를 생성
+  - 생성시 messageCodes를 읽고 1번부터 순서대로 errors.properties에서 찾아서 메시지를 만들어냄.
+- 에러를 bindingResult에 저장
 
 </div>
 </details>
