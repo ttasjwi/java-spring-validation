@@ -242,6 +242,17 @@ bindingResult.rejectValue("itemName", "required");
   - 생성시 messageCodes를 읽고 1번부터 순서대로 errors.properties에서 찾아서 메시지를 만들어냄.
 - 에러를 bindingResult에 저장
 
+### 타입 오류 처리
+
+```properties
+## 추가 (타입 오류)
+typeMismatch.java.lang.Integer=숫자를 입력해주세요.
+typeMismatch=타입 오류입니다.
+```
+- 스프링은 타입 오류가 발생하면 `typeMismatch`오류 코드를 사용함
+- 이 오류코드가 MessageCodesResolver를 통하면서 4가지 메시지 코드가 생성됨
+- 이 부분에 대해서 errors.properties에서 별도로 메시지를 설정하면 이제, 타입 오류에 대해서도 메시지 처리가 가능해진다.
+
 </div>
 </details>
 
