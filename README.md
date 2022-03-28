@@ -253,6 +253,20 @@ typeMismatch=타입 오류입니다.
 - 이 오류코드가 MessageCodesResolver를 통하면서 4가지 메시지 코드가 생성됨
 - 이 부분에 대해서 errors.properties에서 별도로 메시지를 설정하면 이제, 타입 오류에 대해서도 메시지 처리가 가능해진다.
 
+### validator 분리
+```java
+public interface Validator {
+	boolean supports(Class<?> clazz);
+	void validate(Object target, Errors errors);
+}
+```
+- 스프링은 Validator 인터페이스를 제공함
+- support : Validator가 해당 클래스를 지원하는가
+- validate : 실제 검증로직
+  - target : 객체. 형변환해서 사용하면 됨
+  - errors : 오류들. BindingResults는 Errors의 하위 인터페이스이므로 이걸 인자로 호출하면 됨
+- 검증에 대한 로직을 Validator로 넘김
+
 </div>
 </details>
 
