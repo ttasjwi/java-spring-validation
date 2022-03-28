@@ -267,6 +267,12 @@ public interface Validator {
   - errors : 오류들. BindingResults는 Errors의 하위 인터페이스이므로 이걸 인자로 호출하면 됨
 - 검증에 대한 로직을 Validator로 넘김
 
+### WebDataBinder(검증기) 도입
+- `@InitBinder` : 검증기를 컨트롤러 호출 시마다 WebDataBinder 인스턴스를 새로 생성후 validator를 호출함.
+- `@Validated` : 검증기를 통해 검증할 클래스
+- 스프링은 WebMvcBinder에 등록된 검증기를 찾아서 실행함. 여러 검증기를 등록한다면 supports에 의해서 어떤 검증기를 실행할지 구분함.
+- 모든 컨트롤러에 대해 글로벌 설정을 하고 싶으면, 메인 클래스에서 WebMvcConfigurer를 구현하고 getValidator() 메서드에서 글로벌 설정할 검증기를 반환하면 됨. (잘 안 씀)
+
 </div>
 </details>
 
