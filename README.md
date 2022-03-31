@@ -375,4 +375,30 @@ public class Item {
 ```
 - 상품 등록 시, 상품 수정 시 각각에 대해 제약조건이 달라질 경우 Item의 어노테이션을 수정할 경우 SideEffect 발생
   - 어느 한쪽 제약사항에 맞춰 제약을 수정하면 다른 쪽에 영향이 발생함.
----
+
+### BeanValidation - Validated 어노테이션의 groups 기능 적용
+```java
+    @NotNull(groups = UpdateCheck.class)  // 수정 요구사항 : update 시에는 id 값 존재여부를 확인해야한다.
+    private Long id;
+
+    @NotBlank(groups = {SaveCheck.class, UpdateCheck.class})
+    private String itemName;
+
+    @NotNull(groups = {SaveCheck.class, UpdateCheck.class})
+    @Range(min = 1_000, max = 1_000_000, groups = {SaveCheck.class, UpdateCheck.class})
+    private Integer price;
+
+    @NotNull(groups = {SaveCheck.class, UpdateCheck.class})
+    @Max(value = 9999, groups = {SaveCheck.class}) // 수정 시에는 quantity 값에 제약조건을 주지 않는다.
+    private Integer quantity;
+```
+- 별도로 그룹핑에 사용할 인터페이스를 생성(SaveCheck.class, UpdateCheck.class)
+- 제약조건마다 groups 옵션을 통해 그룹별 제약조건을 지정함
+```java
+ public String addItemV2(
+            @Validated(SaveCheck.class) @ModelAttribute Item item,
+            BindingResult bindingResult,
+            RedirectAttributes redirectAttributes) {
+```
+- 사용처에서는 제각각 Validated의 옵션을 지정하여 그룹마다 다른 제약조건을 걸 수 있음.
+- 하지만... 실제 실무는 같은 도메인에 대한 요청 각각마다 폼을 다르게 분리해서 사용함. (도메인 및 컨트롤러단의 복잡도 증가 등의 여러 이유로...) 

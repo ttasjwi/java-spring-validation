@@ -15,18 +15,18 @@ import javax.validation.constraints.NotNull;
 //)
 public class Item {
 
-    //@NotNull
+    @NotNull(groups = UpdateCheck.class)  // 수정 요구사항 : update 시에는 id 값 존재여부를 확인해야한다.
     private Long id;
 
-    @NotBlank
+    @NotBlank(groups = {SaveCheck.class, UpdateCheck.class})
     private String itemName;
 
-    @NotNull
-    @Range(min = 1_000, max = 1_000_000)
+    @NotNull(groups = {SaveCheck.class, UpdateCheck.class})
+    @Range(min = 1_000, max = 1_000_000, groups = {SaveCheck.class, UpdateCheck.class})
     private Integer price;
 
-    @NotNull
-    @Max(9999)
+    @NotNull(groups = {SaveCheck.class, UpdateCheck.class})
+    @Max(value = 9999, groups = {SaveCheck.class}) // 수정 시에는 quantity 값에 제약조건을 주지 않는다.
     private Integer quantity;
 
     public Item() {
