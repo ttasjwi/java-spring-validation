@@ -401,4 +401,39 @@ public class Item {
             RedirectAttributes redirectAttributes) {
 ```
 - 사용처에서는 제각각 Validated의 옵션을 지정하여 그룹마다 다른 제약조건을 걸 수 있음.
-- 하지만... 실제 실무는 같은 도메인에 대한 요청 각각마다 폼을 다르게 분리해서 사용함. (도메인 및 컨트롤러단의 복잡도 증가 등의 여러 이유로...) 
+- 하지만... 실제 실무는 같은 도메인에 대한 요청 각각마다 폼을 다르게 분리해서 사용함. (도메인 및 컨트롤러단의 복잡도 증가 등의 여러 이유로...)
+
+## V4 - Form 전송객체 분리
+
+```java
+@Data
+public class ItemSaveForm {
+
+    @NotBlank
+    private String itemName;
+
+    @NotNull
+    @Range(min = 1_000, max = 1_000_000)
+    private Integer price;
+
+    @NotNull
+    @Max(value = 9999)
+    private Integer quantity;
+
+}
+```
+- itemSaveForm, ItemUpdateForm 분리
+- 컨트롤러에서는 폼 데이터를 전송받고 이를 기반으로 실제 도메인 객체를 생성함
+- 전송하는 폼데이터 맞춤형 객체를 만들어 전달받을 수 있고, 검증도 각각 필요에 맞게 처리할 수 있음.
+
+```java
+        // 성공 로직
+        Item item = new Item();
+        item.setItemName(form.getItemName());
+        item.setPrice(form.getPrice());
+        item.setQuantity(form.getQuantity());
+```
+- 다만 컨트롤러단에서 별도로 도메인 객체를 생성하는 로직을 만들어야함.
+- 실제로 실무에서는 도메인 객체에 대한 Setter를 사용하지 않도록 해야함. 생성자 하나로 퉁치거나 빌더 패턴 등을 사용하여 객체를 생성하도록 할 것.
+
+---
