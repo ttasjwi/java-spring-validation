@@ -15,6 +15,7 @@ import javax.validation.constraints.NotNull;
 //)
 public class Item {
 
+    //@NotNull
     private Long id;
 
     @NotBlank
