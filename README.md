@@ -354,4 +354,18 @@ Range
    ```
 3. 라이브러리가 제공하는 기본 값 사용
 
+
+### Bean Validation - 글로벌 오류
+```java
+@ScriptAssert(
+        lang = "javascript",
+        script = "_this.price * _this.quantity >= 10000",
+        message = "총합이 10000원이 넘도록 입력해주세요."
+)
+public class Item {
+```
+- 클래스 앞에, `@ScriptAssert()` 어노테이션을 통해 글로벌 오류를 처리할 수 있음.
+- 하지만... 제약이 많고 복잡한 경우가 많아서(여러 객체를 참조해야한다거나...) 그렇게 추천되지 않음.
+  - 자바코드로 예외를 직접 추가하는 것이 추천됨
+
 ---
