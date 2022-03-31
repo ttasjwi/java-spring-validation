@@ -298,3 +298,60 @@ implementation 'org.springframework.boot:spring-boot-starter-validation'
 - 스프링은 개발자를 위해 이미 빈 검증기를 스프링에 포함하였음.
 
 ---
+
+## V3 - Bean Validation 적용
+
+### Bean Validation - 스프링 적용
+- 스프링 부트는 `spring-boot-starter-validation`을 의존 라이브러리로 추가하면, 자동으로 BeanValidator을 인지하고 스프링에 통합
+- 스프링 부트는 자동으로 `LocalValidatorFactoryBean`을 글로벌 Validator로 등록. 이것은 `@NotNull` 등의 검증 어노테이션을 보고 검증을 수행함.
+  - 별도로 글로벌 Validator를 등록해두면 어노테이션 기반의 빈 검증기가 동작하지 않으므로 제거하는 것이 좋다.
+- 컨트롤러 단에서, `@Valid` 또는 `@Validated`를 바인딩 객체 앞에 달아주면 FieldError, ObjectError 를 생성하여 BindingResult에 담아줌
+  - `@Valid`는 자바 표준, `@Validated`는 스프링 전용. 내부적으로 기능은 스프링 것이 더 많이 포함됨.
+
+### Bean Validation 검증 순서
+1. 요청을 읽고 `@ModelAttribute` 각각의 필드에 타입 변환 시도
+   - 성공하면 2단계로 진행
+   - 실패하면 `typeMismatch`로 `FieldError` 추가
+2. Validator 적용
+  - 앞에서 필드 에러가 발생했을 경우 이 단계에서 해당필드는 Validator를 적용하지 않는다.
+
+### Bean Validation - 에러코드
+
+```properties
+# @NotBlank : 공백 허용하지 않음
+NotBlank.객체명.필드명
+NotBlank.필드명
+NotBlank.타입
+NotBlank
+
+## @Range : 범위
+Range.객체명.필드명
+Range.필드명
+Range.타입
+Range
+```
+
+1. MessageCodesResolver는 실제로 어노테이션명에 해당하는 오류코드를 기반으로 메시지를 찾아줌
+2. 실제로 메시지 소스에서 메시지를 지정해주면 됨.
+   - 작성 시 인자로 {0}, {1}, {2} 등을 지정 가능
+   - 예)
+     ```properties
+     NotBlank.item.itemName=상품이름을 적어주세요.
+     
+     NotBlank={0} 공백 허용 안 함.
+     Range={0} 오류. {2} ~ {1}의 범위만 허용합니다.
+     Max={0} 오류. 최대 {1}까지 허용합니다.
+     ```
+     - {0} : 필드명
+     - {1},{2} : 각 어노테이션마다 다름
+
+#### 메시지 찾는 순서
+1. 레벨 순으로 messageSource에서 찾기
+2. 어노테이션에 지정한 `@코드명(message="...")` 속성을 읽고 메시지 작성
+   ```java
+   @NotBlank(message="공백은 입력 못 해욧!")
+   private String itemName
+   ```
+3. 라이브러리가 제공하는 기본 값 사용
+
+---
